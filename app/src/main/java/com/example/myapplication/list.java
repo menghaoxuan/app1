@@ -89,6 +89,6 @@ public class list<handler> extends ListActivity implements Runnable{
         //msg.what = 5;
         msg.obj = list;
         handler.sendMessage(msg);
-
+        handler.postDelayed(this,86400000);//定时时间
     }
 }
