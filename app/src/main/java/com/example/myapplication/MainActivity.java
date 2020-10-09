@@ -1,49 +1,49 @@
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.BundleCompat;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.service.controls.templates.TemperatureControlTemplate;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
 public  class MainActivity extends AppCompatActivity {
-    TextView out;
-    EditText edit;
-
-    //private static final String TAG ="MainActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void  onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.name);
-        TextView tv = findViewById(R.id.textView6);
-        tv.setText("温度转化器");
-        //String msg;
-        //Log.d(TAG, msg:"onCreate:")
-
-        EditText input = findViewById(R.id.editTextTextPersonName2);
-        String str = input.getText().toString();
-        out = (TextView) findViewById(R.id.textView5);
-        edit = (EditText) findViewById(R.id.editTextTextPersonName2);
+        setContentView(R.layout.activity_main);
     }
 
 
-    public void abc(View v) {
-        String str = edit.getText().toString();
-
-        if(str.charAt(str.length()-1) =='C') {
-            Double d = Double.parseDouble(str.substring(0, str.length() - 1));
-            out.setText("结果为：" + (d * 9 / 5 + 32)+ "F");
-        }
-        else if(str.charAt(str.length()-1) =='F') {
-            Double d = Double.parseDouble(str.substring(0, str.length() - 1));
-            out.setText("结果为：" + (d-32)*5/9 + "C");
-        }
-        else{
-            out.setText("输入有误，请重新输入");
-        }
-
+    public void jTemperature (View view){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, temperature.class);
+        startActivity(intent);
     }
+
+    public void jCount (View view){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, count.class);
+        startActivity(intent);
+    }
+
+    public void jCount2 (View view){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, count2.class);
+        startActivity(intent);
+    }
+
+    public void jConversion (View view){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, conversion.class);
+        startActivity(intent);
+    }
+
+
 }
