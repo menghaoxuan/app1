@@ -1,6 +1,12 @@
 package com.example.myapplication;
 
+import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.ListActivity;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,11 +23,21 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class list<handler> extends ListActivity implements Runnable{
+
+
     private static final String TAG = "conversion";
+    SharedPreferences sp;
+    String date;
+    Set rate3;
 
     int length = 3;
     public List<String> getRate2(){
@@ -49,29 +65,59 @@ public class list<handler> extends ListActivity implements Runnable{
     }
 
     Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_list);
 
-                handler = new  Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    if (msg.what == 5) {
+        handler = new  Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == 5) {
 
+                    sp = getSharedPreferences("rate", Activity.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putStringSet("allRate", new HashSet<String>((List<String>)msg.obj));
+                    editor.putString("date",new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                    editor.apply();
 
-                        List<String> str1 = (List<String>) msg.obj;
-                        ListAdapter adapter = new ArrayAdapter<String>(
-                                list.this,
-                                android.R.layout.simple_list_item_1,
-                                str1);
-                        setListAdapter(adapter);
-                    }
-                    super.handleMessage(msg);
+                    List<String> str1 = (List<String>) msg.obj;
+                    ListAdapter adapter = new ArrayAdapter<String>(
+                            list.this,
+                            android.R.layout.simple_list_item_1,
+                            str1);
+                    setListAdapter(adapter);
                 }
-            };
-        Thread t = new Thread(this);
-        t.start();
+                super.handleMessage(msg);
+            }
+        };
+
+        sp = getSharedPreferences("rate",Activity.MODE_PRIVATE);
+        date = sp.getString("date","");
+        Date date2 = new Date();
+        SimpleDateFormat simple = new SimpleDateFormat("yyyy-MM-dd");
+        String now = simple.format(date2);
+
+        if(date==now){
+            rate3 = sp.getStringSet("allRate",null);
+            List<String> list =  new ArrayList(rate3);
+            ListAdapter adapter = new ArrayAdapter<String>(list.this,android.R.layout.simple_list_item_1,list);
+            setListAdapter(adapter);
+        }
+        //不是同一天则从网络中获取数据，写入新的数据和日期
+        else{
+
+
+
+
+            Thread t = new Thread(this);
+            t.start();
+
+        }
+
+
+
     }
 
 
@@ -89,6 +135,5 @@ public class list<handler> extends ListActivity implements Runnable{
         //msg.what = 5;
         msg.obj = list;
         handler.sendMessage(msg);
-        handler.postDelayed(this,86400000);//定时时间
     }
 }
