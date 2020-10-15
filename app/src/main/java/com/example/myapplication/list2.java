@@ -11,10 +11,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,7 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class list<handler> extends ListActivity implements Runnable{
+public class list2<handler> extends ListActivity implements Runnable,AdapterView.OnItemClickListener {
 
 
     private static final String TAG = "conversion";
@@ -40,35 +44,36 @@ public class list<handler> extends ListActivity implements Runnable{
     String date;
     Set rate3;
 
+
     int length = 3;
-    public List<String> getRate2(){
+    public List<HashMap<String,String>> getRate2(){
         String url = "https://www.usd-cny.com/bankofchina.htm";
         Document doc = null;
         List<String> list = new ArrayList<>();
+        List<HashMap<String,String>> listItems = null;
         try {
             doc = (Document) Jsoup.connect(url).get();
             Log.i(TAG, "getRate2: "+doc.title());
             Elements tables = doc.getElementsByTag("table");
             Element table = tables.get(0);//因为本网页只有一个table，等价于.first()
             Elements tds = table.getElementsByTag("td");//从table中找<td>，即列
-            ArrayList<HashMap<String, String>> listItems = new ArrayList<HashMap<String, String>>();
+            listItems = new ArrayList<HashMap<String, String>>();
+
             for (int i = 0;i < tds.size();i+=6){
                 Element td1 = tds.get(i);
                 Element td2 = tds.get(i+5);
                 String str1 = td1.text();
                 String val = td2.text();
-                list.add(str1+"==>"+val);
                 HashMap<String, String> map = new HashMap<String,
                         String>();
-                map.put("ItemTitle", "Rate： " + str1); // 标题文字
-                map.put("ItemDetail", "detail" + val); // 详情描述
+                map.put("ItemTitle", "" + str1); // 标题文字
+                map.put("ItemDetail", "" + val); // 详情描述
                 listItems.add(map);
-
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return list;
+        return listItems;
     }
 
     Handler handler;
@@ -83,18 +88,27 @@ public class list<handler> extends ListActivity implements Runnable{
             public void handleMessage(Message msg) {
                 if (msg.what == 5) {
 
+                    List<String> message = (List<String>)msg.obj;
+
                     sp = getSharedPreferences("rate", Activity.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sp.edit();
                     editor.putStringSet("allRate", new HashSet<String>((List<String>)msg.obj));
                     editor.putString("date",new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
                     editor.apply();
 
-                    List<String> str1 = (List<String>) msg.obj;
-                    ListAdapter adapter = new ArrayAdapter<String>(
-                            list.this,
-                            android.R.layout.simple_list_item_1,
-                            str1);
-                    setListAdapter(adapter);
+
+                    List<HashMap<String,String>> str1 = (List<HashMap<String, String>>) msg.obj;
+
+                    for(HashMap<String,String> s:str1){
+                        String ss = s.get("itemTitle") + ":" + s.get("itemDetail");
+                    }
+                    SimpleAdapter listItemAdapter = new SimpleAdapter(list2.this,
+                            str1, // listItems 数据源
+                            R.layout.list2, // ListItem 的 XML 布局实现
+                            new String[] { "ItemTitle", "ItemDetail" },
+                            new int[] { R.id.itemTitle, R.id.itemDetail }
+                    );
+                    getListView().setAdapter(listItemAdapter);
                 }
                 super.handleMessage(msg);
             }
@@ -109,27 +123,17 @@ public class list<handler> extends ListActivity implements Runnable{
         if(date==now){
             rate3 = sp.getStringSet("allRate",null);
             List<String> list =  new ArrayList(rate3);
-            ListAdapter adapter = new ArrayAdapter<String>(list.this,android.R.layout.simple_list_item_1,list);
+            ListAdapter adapter = new ArrayAdapter<String>(list2.this,android.R.layout.simple_list_item_1,list);
             setListAdapter(adapter);
         }
         //不是同一天则从网络中获取数据，写入新的数据和日期
         else{
-
-
-
-
             Thread t = new Thread(this);
             t.start();
-
         }
-
-
+        getListView().setOnItemClickListener(this);
 
     }
-
-
-
-
 
     @Override
     public void run() {
@@ -137,10 +141,41 @@ public class list<handler> extends ListActivity implements Runnable{
         // 获取网络数据
         URL url = null;
         ArrayList<String> arrayList;
-        List<String> list = getRate2();
+        List<HashMap<String,String>> list = getRate2();
         Message msg = handler.obtainMessage(5);
         //msg.what = 5;
         msg.obj = list;
         handler.sendMessage(msg);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        Object itemAtPosition = getListView().getItemAtPosition(position);
+        HashMap<String,String> map = (HashMap<String, String>) itemAtPosition;
+        String titleStr = map.get("ItemTitle");
+        String detailStr = map.get("ItemDetail");
+        Log.i(TAG, "onItemClick: titleStr=" + titleStr);
+        Log.i(TAG, "onItemClick: detailStr=" + detailStr);
+
+
+        TextView title = (TextView) view.findViewById(R.id.itemTitle);
+        TextView detail = (TextView) view.findViewById(R.id.itemDetail);
+        String title2 = String.valueOf(title.getText());
+        String detail2 = String.valueOf(detail.getText());
+        Log.i(TAG, "onItemClick: title2=" + title2);
+        Log.i(TAG, "onItemClick: detail2=" + detail2);
+
+
+        SharedPreferences sharedPreferences = getSharedPreferences("currency", Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("currency",title2);
+        editor.putString("rate",detail2);
+        editor.commit();
+        Toast.makeText(this,"currency.XML is updated",Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent();
+        intent.setClass(list2.this, list3.class);
+        startActivity(intent);
     }
 }
