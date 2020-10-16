@@ -211,6 +211,6 @@ public class list2<handler> extends AppCompatActivity implements Runnable,Adapte
         builder.create().show();
 
 
-        return false;
+        return true;
     }
 }
