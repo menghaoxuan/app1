@@ -54,7 +54,7 @@ public class list2<handler> extends AppCompatActivity implements Runnable,Adapte
     SimpleAdapter listItemAdapter;
     int position;
 
-    int length = 3;
+
     public List<HashMap<String,String>> getRate2(){
         String url = "https://www.usd-cny.com/bankofchina.htm";
         Document doc = null;

@@ -71,7 +71,7 @@
         android:id="@+id/button37"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="jConversion"
+        android:onClick="jList2"
         android:text="jump to conversion"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"

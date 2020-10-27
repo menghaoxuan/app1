@@ -39,9 +39,9 @@ public  class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void jConversion (View view){
+    public void jList2 (View view){
         Intent intent = new Intent();
-        intent.setClass(MainActivity.this, conversion.class);
+        intent.setClass(MainActivity.this, list2.class);
         startActivity(intent);
     }
 

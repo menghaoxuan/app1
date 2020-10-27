@@ -71,6 +71,7 @@ public class list<handler> extends ListActivity implements Runnable{
         return list;
     }
 
+
     Handler handler;
 
     @Override
